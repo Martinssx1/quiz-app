@@ -1,6 +1,6 @@
-import type { Questions } from "./Questions";
+import type { Questions } from "../Questions";
 
-export const Nigerianquestions: Questions[] = [
+export const EasyNigerianquestions: Questions[] = [
   {
     question: "When did Nigeria gain independence?",
     answer: "1960",

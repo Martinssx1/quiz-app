@@ -8,13 +8,24 @@ interface quizprops {
 }
 
 function Code({ questions }: quizprops) {
+  const [answersSelected, setAnswersSelected] = useState<
+    Record<number, string>
+  >(() => {
+    const savedShowAnswer = localStorage.getItem("selectedanswer");
+    return savedShowAnswer ? JSON.parse(savedShowAnswer) : {};
+  });
   const [selectedItem, setSelectedItem] = useState("");
-  const [active, setactive] = useState(true);
+
+  const [active, setactive] = useState(() => {
+    const savedActive = localStorage.getItem("active");
+    return savedActive ? JSON.parse(savedActive) : true;
+  });
+  const [showResult, setShowResut] = useState(false);
   const [count, setCount] = useState(() => {
     const savedscore = localStorage.getItem("score");
     return savedscore ? Number(savedscore) : 0;
   });
-  const [timesUp, setTimesUp] = useState(false);
+  console.log(answersSelected);
 
   const [remainingTime, setRemainingTime] = useState(() => {
     const savedtime = localStorage.getItem("timer");
@@ -32,6 +43,12 @@ function Code({ questions }: quizprops) {
     localStorage.setItem("timer", String(remainingTime));
     localStorage.setItem("score", String(count));
   }, [currentindex, remainingTime, count]);
+  useEffect(() => {
+    localStorage.setItem("selectedanswer", JSON.stringify(answersSelected));
+  }, [answersSelected]);
+  useEffect(() => {
+    localStorage.setItem("active", String(active));
+  }, [active]);
 
   function next() {
     if (currentindex < questions.length - 1) {
@@ -40,9 +57,21 @@ function Code({ questions }: quizprops) {
       }
       setcurrentindex((Prev) => Prev + 1);
       setSelectedItem("");
+      showAnswer();
     }
   }
+  function showAnswer() {
+    if (selectedItem === "") return;
 
+    setAnswersSelected((prev) => {
+      if (prev === selectedItem) return prev;
+
+      return {
+        ...prev,
+        [currentindex]: selectedItem,
+      };
+    });
+  }
   const indexquestions = questions[currentindex];
 
   function rightwrong(_e: React.MouseEvent, item: string) {
@@ -53,9 +82,12 @@ function Code({ questions }: quizprops) {
 
     const id = setInterval(() => {
       setRemainingTime((prev) => {
-        if (prev === 0) {
+        if (prev <= 0) {
           setactive(false);
-          setTimesUp(true);
+
+          localStorage.removeItem("timer");
+          localStorage.removeItem("index");
+
           return 0;
         }
         return prev - 1;
@@ -69,7 +101,11 @@ function Code({ questions }: quizprops) {
       setCount((prev) => prev + 1);
     }
     setactive(false);
-    setTimesUp(true);
+    setRemainingTime(0);
+    showAnswer();
+  }
+  function showResults() {
+    setShowResut(!showResult);
   }
 
   function home() {
@@ -77,15 +113,17 @@ function Code({ questions }: quizprops) {
     localStorage.removeItem("timer");
     localStorage.removeItem("index");
     localStorage.removeItem("score");
+    localStorage.removeItem("selectedanswer");
+    localStorage.removeItem("active");
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-gray-50  dark:bg-gray-900 dark:text-gray-100 flex items-center justify-center p-8">
       <div className="max-w-3xl w-full">
-        {active && (
+        {active ? (
           <>
             <div className="mb-8">
-              <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <div className="flex justify-between text-sm  mb-2">
                 <span>
                   Question {currentindex + 1} of {questions.length}
                 </span>
@@ -94,7 +132,7 @@ function Code({ questions }: quizprops) {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-blue-600 dark:bg-black h-2 rounded-full transition-all duration-300"
                   style={{
                     width: `${((currentindex + 1) / questions.length) * 100}%`,
                   }}
@@ -102,20 +140,20 @@ function Code({ questions }: quizprops) {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+            <div className="bg-white rounded-lg dark:bg-gray-900 dark:text-gray-100 shadow-sm border border-gray-200 p-8 mb-6">
+              <h2 className="text-2xl font-semibold mb-6">
                 {indexquestions.question}
               </h2>
 
-              <div className="space-y-3">
+              <div className="space-y-3 ">
                 {indexquestions.options.map((item, i) => (
                   <div
                     key={i}
                     onClick={(e) => rightwrong(e, item)}
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       selectedItem === item
-                        ? "border-blue-600 bg-blue-50"
-                        : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                        ? "border-blue-600 bg-blue-50 dark:bg-gray-400 dark:text-black"
+                        : "border-gray-200 bg-white dark:bg-black hover:border-gray-300 hover:bg-gray-50"
                     }`}
                   >
                     <div className="flex items-center">
@@ -130,7 +168,7 @@ function Code({ questions }: quizprops) {
                           <div className="w-2 h-2 bg-white rounded-full"></div>
                         )}
                       </div>
-                      <span className="text-gray-700 font-medium">{item}</span>
+                      <span className=" font-medium">{item}</span>
                     </div>
                   </div>
                 ))}
@@ -140,7 +178,7 @@ function Code({ questions }: quizprops) {
             <div className="flex justify-end gap-3">
               <button
                 onClick={home}
-                className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                className="px-6 py-3 rounded-lg border border-gray-300  font-medium dark:hover:bg-gray-400 dark:hover:text-black hover:bg-gray-50 transition-colors"
               >
                 Exit Quiz
               </button>
@@ -171,32 +209,61 @@ function Code({ questions }: quizprops) {
               )}
             </div>
           </>
-        )}
-        {timesUp && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-            <div className="text-6xl mb-6">
-              {count >= 8 ? "🎉" : count >= 5 ? "👍" : "📚"}
+        ) : (
+          <>
+            <div className="bg-white rounded-lg dark:bg-black dark:text-gray-100 shadow-sm border border-gray-200 p-12 text-center">
+              <div className="text-6xl mb-6">
+                {count >= 8 ? "🎉" : count >= 5 ? "👍" : "📚"}
+              </div>
+              <h1 className="text-4xl font-bold mb-4">Quiz Complete!</h1>
+              <div className="text-6xl font-bold text-blue-600 mb-6">
+                {count}/{questions.length}
+              </div>
+              <p className="text-xl mb-8">
+                {count >= 8
+                  ? "Outstanding! You're a gaming expert! 🏆"
+                  : count >= 5
+                  ? "Good job! You know your games! 👏"
+                  : "Keep playing and learning! 💪"}
+              </p>
+              <button
+                onClick={home}
+                className="px-8 py-3 bg-blue-600  text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Back to Home
+              </button>
+              <div
+                onClick={showResults}
+                className="text-sm underline mt-1 cursor-pointer"
+              >
+                show Answers
+              </div>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Quiz Complete!
-            </h1>
-            <div className="text-6xl font-bold text-blue-600 mb-6">
-              {count}/{questions.length}
-            </div>
-            <p className="text-xl text-gray-600 mb-8">
-              {count >= 8
-                ? "Outstanding! You're a gaming expert! 🏆"
-                : count >= 5
-                ? "Good job! You know your games! 👏"
-                : "Keep playing and learning! 💪"}
-            </p>
-            <button
-              onClick={home}
-              className="px-8 py-3 bg-blue-600  text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              Back to Home
-            </button>
-          </div>
+            {showResult && (
+              <div className="bg-gray-400 text-gray-700 mt-4 rounded-md  font-bold">
+                {Object.entries(answersSelected).map(([key, value]) => {
+                  const index = Number(key);
+                  const question = questions[index];
+
+                  return (
+                    <div key={key} className="border-b-2 p-1">
+                      <p>
+                        {`Q${index + 1}`}: {question.question}
+                      </p>
+                      <p>{`Your Answer : ${value} ${
+                        value === question.answer ? "Correct✅" : "Wrong❌"
+                      }`}</p>
+                      {value === question.answer ? (
+                        ""
+                      ) : (
+                        <p>{`Correct Answer : ${question.answer}`}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

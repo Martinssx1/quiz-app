@@ -1,5 +1,5 @@
-import type { Questions } from "./Questions";
-export const Gamingquestions: Questions[] = [
+import type { Questions } from "../Questions";
+export const GamingquestionsEasy: Questions[] = [
   {
     question:
       "In Minecraft, what material do you need to build a Nether Portal?",

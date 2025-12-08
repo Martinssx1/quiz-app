@@ -10,13 +10,15 @@ import Nigerianhis from "./pages/Nigerianhis";
 function App() {
   return (
     <>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/Gaming" element={<Gaming />} />
-        <Route path="/Coding" element={<Coding />} />
-        <Route path="/Football" element={<Football />} />
-        <Route path="/Nigerianhis" element={<Nigerianhis />} />
-      </Routes>
+      <div className="bg-black">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/Gaming" element={<Gaming />} />
+          <Route path="/Coding" element={<Coding />} />
+          <Route path="/Football" element={<Football />} />
+          <Route path="/Nigerianhis" element={<Nigerianhis />} />
+        </Routes>
+      </div>
     </>
   );
 }
