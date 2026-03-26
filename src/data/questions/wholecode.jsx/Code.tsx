@@ -25,7 +25,7 @@ function Code({ questions }: quizprops) {
     const savedscore = localStorage.getItem("score");
     return savedscore ? Number(savedscore) : 0;
   });
-  console.log(answersSelected);
+
 
   const [remainingTime, setRemainingTime] = useState(() => {
     const savedtime = localStorage.getItem("timer");
@@ -95,6 +95,8 @@ function Code({ questions }: quizprops) {
     }, 1000);
     return () => clearInterval(id);
   }, [active]);
+
+
 
   function finish() {
     if (questions[currentindex].answer === selectedItem) {

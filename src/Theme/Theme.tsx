@@ -12,7 +12,9 @@ const themeContext = createContext<Themeprops | undefined>(undefined);
 export function Themeprovide({ children }: Childrentype) {
   const [theme, setTheme] = useState(() => {
     const savedtime = localStorage.getItem("theme");
-    return savedtime ? JSON.parse(savedtime) : false;
+    return savedtime
+      ? JSON.parse(savedtime)
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
   });
   function toogleTheme() {
     setTheme((prev: boolean) => !prev);
